@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧨 Netflix Trial Relay – nf.kengkoy.com</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #0a0e14;
+            color: #00f5d4;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            background: #111820;
+            border: 1px solid #00f5d444;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 0 60px #00f5d422;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 26px;
+            color: #00f5d4;
+            text-shadow: 0 0 20px #00f5d433;
+        }
+        .sub {
+            color: #8899aa;
+            font-size: 13px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #1a2a3a;
+            padding-bottom: 12px;
+        }
+        .domain-badge {
+            background: #00f5d422;
+            color: #00f5d4;
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            border: 1px solid #00f5d433;
+        }
+        .status-bar {
+            background: #0d1520;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border-left: 4px solid #00f5d4;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .status-bar .ip { color: #88ddcc; font-weight: bold; }
+        .badge {
+            background: #00f5d422;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 12px;
+            border: 1px solid #00f5d433;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+        }
+        .btn {
+            background: transparent;
+            border: 1px solid #00f5d488;
+            color: #00f5d4;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-family: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 1 0 auto;
+            text-align: center;
+            min-width: 100px;
+        }
+        .btn:hover {
+            background: #00f5d422;
+            border-color: #00f5d4;
+            box-shadow: 0 0 25px #00f5d422;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: #00f5d422; border-color: #00f5d4; }
+        .btn-danger { border-color: #ff6b6b88; color: #ff6b6b; }
+        .btn-danger:hover { background: #ff6b6b22; border-color: #ff6b6b; }
+        .log-area {
+            background: #0a1018;
+            border: 1px solid #1a2a3a;
+            border-radius: 12px;
+            padding: 15px;
+            height: 320px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+        }
+        .log-area .time { color: #556677; }
+        .log-area .ok { color: #00f5d4; }
+        .log-area .err { color: #ff6b6b; }
+        .log-area .info { color: #ffd93d; }
+        .log-area .debug { color: #6b7b8b; }
+        .flex-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        input[type="text"] {
+            background: #0d1520;
+            border: 1px solid #1a2a3a;
+            color: #ddeeff;
+            padding: 10px 16px;
+            border-radius: 30px;
+            flex: 2;
+            min-width: 200px;
+            font-family: inherit;
+            outline: none;
+            font-size: 14px;
+        }
+        input[type="text"]:focus { border-color: #00f5d488; }
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+        .dot-idle { background: #445566; }
+        .dot-connected { background: #00f5d4; box-shadow: 0 0 12px #00f5d466; }
+        .dot-working { background: #ffd93d; animation: pulse 1s infinite; }
+        .dot-error { background: #ff6b6b; }
+        @keyframes pulse {
+            0% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.4; transform: scale(1); }
+        }
+        .inbox-link {
+            color: #4fc3ff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .inbox-link:hover { color: #81d4fa; }
+        .info-box {
+            background: #0d1520;
+            border-radius: 8px;
+            padding: 8px 14px;
+            margin: 8px 0;
+            font-size: 13px;
+            border-left: 3px solid #00f5d466;
+        }
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .btn { min-width: 70px; padding: 8px 14px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🔌 nf.kengkoy.com</h1>
+        <span class="domain-badge">🌐 IP Relay</span>
+    </div>
+    <div class="sub">⚡ All requests tunneled via WebSocket – your IP is forwarded to every API</div>
+
+    <div class="status-bar">
+        <span>
+            <span class="status-dot dot-idle" id="statusDot"></span>
+            <span id="wsStatus" style="color:#ffd93d;">Connecting...</span>
+        </span>
+        <span>🌐 Your IP: <span class="ip" id="userIp">detecting...</span></span>
+        <span>📊 <span id="requestCount">0</span> requests</span>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-primary" id="genEmailBtn">📧 Generate Email</button>
+        <button class="btn" id="sendTrialBtn">📤 Send Trial</button>
+        <button class="btn" id="checkMailBtn">📬 Check Inbox</button>
+        <button class="btn btn-primary" id="autoPilotBtn">⚡ Auto Pilot</button>
+        <button class="btn btn-danger" id="clearLogBtn">🗑️ Clear Log</button>
+    </div>
+
+    <div class="flex-row">
+        <input type="text" id="manualEmailInput" placeholder="Or paste email manually...">
+        <button class="btn" id="manualSendBtn" style="flex:0;">Send</button>
+        <button class="btn" id="clickLinkBtn" style="flex:0;">🔗 Click Link</button>
+    </div>
+
+    <div id="emailDisplay" class="info-box" style="display:none;"></div>
+    <div id="inboxDisplay" class="info-box" style="display:none;"></div>
+
+    <div class="log-area" id="log"></div>
+</div>
+
+<script>
+    // ============================================================
+    //  WebSocket Client – Domain: nf.kengkoy.com
+    // ============================================================
+
+    const LOG = document.getElementById('log');
+    const WS_STATUS = document.getElementById('wsStatus');
+    const USER_IP_SPAN = document.getElementById('userIp');
+    const STATUS_DOT = document.getElementById('statusDot');
+    const REQUEST_COUNT = document.getElementById('requestCount');
+    const EMAIL_DISPLAY = document.getElementById('emailDisplay');
+    const INBOX_DISPLAY = document.getElementById('inboxDisplay');
+
+    // ---- Config ----
+    const DOMAIN = 'nf.kengkoy.com';
+    const HTTP_PORT = 8090;
+    const WS_PORT = 8765;
+    const WS_URL = `ws://${DOMAIN}:${WS_PORT}/ws`;
+
+    // ---- State ----
+    let ws = null;
+    let wsReady = false;
+    let requestCount = 0;
+    let state = {
+        email: null,
+        token: null,
+        inboxUrl: null,
+        magicLink: null,
+        working: false,
+        myIp: 'unknown'
+    };
+
+    // ---- Logging ----
+    function log(msg, type = 'info') {
+        const time = new Date().toLocaleTimeString();
+        const prefix = type === 'ok' ? '✅' : type === 'err' ? '❌' : type === 'debug' ? '🔍' : 'ℹ️';
+        LOG.innerHTML += `<span class="time">[${time}]</span> <span class="${type}">${prefix} ${msg}</span>\n`;
+        LOG.scrollTop = LOG.scrollHeight;
+    }
+
+    function setStatus(dotClass, text) {
+        STATUS_DOT.className = 'status-dot ' + dotClass;
+        if (text) WS_STATUS.textContent = text;
+    }
+
+    function updateRequestCount() {
+        REQUEST_COUNT.textContent = requestCount;
+    }
+
+    // ---- Connect WebSocket ----
+    function connectWS() {
+        if (ws && ws.readyState === WebSocket.OPEN) return;
+        
+        log(`Connecting to ${WS_URL}...`, 'info');
+        ws = new WebSocket(WS_URL);
+
+        ws.onopen = () => {
+            wsReady = true;
+            setStatus('dot-connected', 'Connected');
+            log('WebSocket connected. Relay ready.', 'ok');
+        };
+
+        ws.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                handleWSMessage(data);
+            } catch (e) {
+                log(`WS parse error: ${e.message}`, 'err');
+            }
+        };
+
+        ws.onclose = () => {
+            wsReady = false;
+            setStatus('dot-error', 'Disconnected');
+            log('WebSocket disconnected. Reconnecting in 3s...', 'err');
+            setTimeout(connectWS, 3000);
+        };
+
+        ws.onerror = (err) => {
+            log(`WebSocket error: ${err.message || 'unknown'}`, 'err');
+        };
+    }
+
+    // ---- Handle incoming WS messages ----
+    function handleWSMessage(data) {
+        if (data.type === 'handshake') {
+            state.myIp = data.your_ip || 'unknown';
+            USER_IP_SPAN.textContent = state.myIp;
+            log(`Handshake received. Your IP: ${state.myIp}`, 'ok');
+            setStatus('dot-connected', 'Ready');
+            return;
+        }
+
+        if (data.type === 'response') {
+            requestCount++;
+            updateRequestCount();
+            
+            const status = data.status;
+            const body = data.body;
+            const url = data.url;
+            const method = data.method;
+            const elapsed = data.elapsed_ms || '?';
+            
+            log(`[${method}] ${url.slice(0, 50)}... → ${status} (${elapsed}ms)`, 
+                status >= 200 && status < 400 ? 'ok' : 'err');
+
+            if (url.includes('kengkoy.net/api/v1/email') && method === 'POST') {
+                if (status === 200 && body.success) {
+                    state.email = body.email;
+                    state.token = body.token;
+                    state.inboxUrl = body.inbox_url;
+                    EMAIL_DISPLAY.style.display = 'block';
+                    EMAIL_DISPLAY.innerHTML = 
+                        `📧 <strong>${body.email}</strong> &nbsp; <a href="${body.inbox_url}" target="_blank" class="inbox-link">📬 Open Inbox</a>`;
+                    log(`✅ Email generated: ${body.email}`, 'ok');
+                } else {
+                    log(`❌ Email creation failed: ${JSON.stringify(body).slice(0, 100)}`, 'err');
+                }
+                return;
+            }
+
+            if (url.includes('kengkoy.net/api/v1/inbox/')) {
+                if (status === 200 && body.success) {
+                    const msgs = body.messages || [];
+                    if (msgs.length) {
+                        INBOX_DISPLAY.style.display = 'block';
+                        INBOX_DISPLAY.innerHTML = 
+                            `📩 <strong>${msgs.length}</strong> messages | Latest: ${msgs[0].from || 'unknown'}`;
+                        log(`📬 Found ${msgs.length} messages`, 'ok');
+                        
+                        const latest = msgs[0];
+                        wsSend('fetch', {
+                            url: `https://kengkoy.net/api/v1/message/${latest.id}?token=${state.token}`,
+                            method: 'GET',
+                            headers: {}
+                        });
+                    } else {
+                        log('📭 No messages yet.', 'info');
+                    }
+                } else {
+                    log(`Inbox fetch failed: ${JSON.stringify(body).slice(0, 100)}`, 'err');
+                }
+                return;
+            }
+
+            if (url.includes('kengkoy.net/api/v1/message/')) {
+                if (status === 200 && body.success) {
+                    const msg = body.message || {};
+                    const html = msg.body?.html || '';
+                    const text = msg.body?.text || '';
+                    const link = extractNetflixLink(html, text);
+                    if (link) {
+                        state.magicLink = link;
+                        INBOX_DISPLAY.innerHTML += 
+                            ` &nbsp; 🔗 <a href="${link}" target="_blank" class="inbox-link">Magic Link</a>`;
+                        log(`🔗 Magic link extracted`, 'ok');
+                    } else {
+                        log('No magic link in this email.', 'info');
+                    }
+                }
+                return;
+            }
+
+            if (url.includes('netflix.com/graphql')) {
+                if (status === 200) {
+                    log('✅ Netflix trial request accepted!', 'ok');
+                } else {
+                    log(`❌ Netflix trial failed with status ${status}`, 'err');
+                }
+                return;
+            }
+
+            return;
+        }
+
+        if (data.type === 'error') {
+            log(`❌ Error: ${data.message}`, 'err');
+        }
+
+        if (data.type === 'pong') {
+            log(`🏓 Pong (IP: ${data.client_ip}, uptime: ${Math.round(data.uptime)}s)`, 'debug');
+        }
+    }
+
+    // ---- Send command via WebSocket ----
+    function wsSend(action, payload = {}) {
+        if (!wsReady) {
+            log('WebSocket not ready. Reconnecting...', 'err');
+            connectWS();
+            return Promise.reject(new Error('WS not ready'));
+        }
+        return new Promise((resolve, reject) => {
+            const msg = { action, ...payload };
+            try {
+                ws.send(JSON.stringify(msg));
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    async function wsFetch(url, method = 'GET', headers = {}, body = null) {
+        return wsSend('fetch', { url, method, headers, body });
+    }
+
+    function extractNetflixLink(html, text) {
+        const anchorRe = /<a\s+[^>]*href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
+        let match;
+        while ((match = anchorRe.exec(html)) !== null) {
+            const href = match[1];
+            const inner = match[2].replace(/<[^>]+>/g, '');
+            if (/create.*account/i.test(inner) || /complete.*signup/i.test(inner)) {
+                return href.replace(/&amp;/g, '&');
+            }
+        }
+        const fallback = /https?:\/\/www\.netflix\.com\/(?:epr|account)[^\s"']+/i.exec(html);
+        if (fallback) return fallback[0];
+        const textFallback = /https?:\/\/www\.netflix\.com\/(?:epr|account)[^\s]+/i.exec(text);
+        return textFallback ? textFallback[0] : null;
+    }
+
+    // ---- UI Actions ----
+    async function genEmail() {
+        if (state.working) return log('Already working...', 'err');
+        state.working = true;
+        setStatus('dot-working', 'Generating...');
+        log('📧 Generating temp email...', 'info');
+        try {
+            await wsFetch('https://kengkoy.net/api/v1/email', 'POST', {
+                'Content-Type': 'application/json'
+            });
+        } catch (e) {
+            log(`Error: ${e.message}`, 'err');
+        }
+        state.working = false;
+        setStatus('dot-connected', 'Ready');
+    }
+
+    async function sendTrialAction() {
+        if (state.working) return log('Already working...', 'err');
+        if (!state.email) return log('Generate an email first!', 'err');
+        state.working = true;
+        setStatus('dot-working', 'Sending trial...');
+        log(`📤 Sending trial to ${state.email}...`, 'info');
+
+        const flwssn = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36);
+        const requestId = crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '').slice(0, 32) : Math.random().toString(36).slice(0, 32);
+
+        const initPayload = {
+            operationName: "CLCSWebInitSignup",
+            variables: {
+                inputNode: "WELCOME",
+                locale: "en-IN",
+                inputFields: [
+                    { name: "flwssn", value: { stringValue: flwssn } },
+                    { name: "email", value: { stringValue: state.email } },
+                    { name: "recaptchaError", value: { stringValue: "LOAD_TIMED_OUT" } },
+                    { name: "recaptchaSiteKey", value: { stringValue: "6LdqW_EqAAAAAO87Fb_kcZfNzs0IqJRcKiJDYpUv" } },
+                    { name: "recaptchaToken", value: {} }
+                ]
+            },
+            extensions: {
+                persistedQuery: {
+                    id: "5d76d6a0-ccfe-4c31-b587-b4e1954732ca",
+                    version: 102
+                }
+            }
+        };
+
+        try {
+            await wsFetch('https://web.prod.cloud.netflix.com/graphql', 'POST', {
+                'Content-Type': 'application/json',
+                'x-netflix.context.app-version': 'v38c5b0da',
+                'x-netflix.context.form-factor': 'phone',
+                'x-netflix.context.operation-name': 'CLCSWebInitSignup',
+                'x-netflix.request.id': requestId,
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) Chrome/137.0.0.0 Mobile Safari/537.36'
+            }, initPayload);
+
+            setTimeout(async () => {
+                await wsFetch(
+                    'https://occ-0-6711-64.1.nflxso.net/dnm/api/v6/QqNdfvCShgtu-ra1rla_KxCcSSY/AAAAQAmpros-eVHttd-jyVbIiMTW885cisEwMOLTGkTzHQifWIkevLiCu24tEsptsw.png?r=bff',
+                    'GET'
+                );
+            }, 1000);
+
+        } catch (e) {
+            log(`Error: ${e.message}`, 'err');
+        }
+        state.working = false;
+        setStatus('dot-connected', 'Ready');
+    }
+
+    async function checkMail() {
+        if (state.working) return log('Already working...', 'err');
+        if (!state.token) return log('Generate an email first!', 'err');
+        state.working = true;
+        setStatus('dot-working', 'Checking...');
+        log('📬 Checking inbox...', 'info');
+        try {
+            await wsFetch(`https://kengkoy.net/api/v1/inbox/${state.token}`, 'GET', {
+                'Accept': 'application/json'
+            });
+        } catch (e) {
+            log(`Error: ${e.message}`, 'err');
+        }
+        state.working = false;
+        setStatus('dot-connected', 'Ready');
+    }
+
+    async function clickMagicLink() {
+        if (!state.magicLink) {
+            log('No magic link available. Check inbox first.', 'err');
+            return;
+        }
+        log(`🔗 Clicking magic link...`, 'info');
+        try {
+            await wsFetch(state.magicLink, 'GET', {
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 10; K) Chrome/137.0.0.0 Mobile Safari/537.36'
+            });
+            log('✅ Magic link clicked!', 'ok');
+        } catch (e) {
+            log(`Error clicking link: ${e.message}`, 'err');
+        }
+    }
+
+    async function autoPilot() {
+        if (state.working) return log('Already running...', 'err');
+        state.working = true;
+        setStatus('dot-working', 'Auto-pilot...');
+        log('🚀 Auto-pilot engaged...', 'info');
+        try {
+            await genEmail();
+            await new Promise(r => setTimeout(r, 2000));
+            await sendTrialAction();
+            await new Promise(r => setTimeout(r, 5000));
+            await checkMail();
+            log('✅ Auto-pilot complete.', 'ok');
+        } catch (e) {
+            log(`Auto-pilot error: ${e.message}`, 'err');
+        }
+        state.working = false;
+        setStatus('dot-connected', 'Ready');
+    }
+
+    async function manualSend() {
+        const input = document.getElementById('manualEmailInput');
+        const email = input.value.trim();
+        if (!email || !email.includes('@')) return log('Invalid email.', 'err');
+        state.email = email;
+        EMAIL_DISPLAY.style.display = 'block';
+        EMAIL_DISPLAY.innerHTML = `📧 <strong>${email}</strong> (manual)`;
+        await sendTrialAction();
+    }
+
+    function clearLog() {
+        LOG.innerHTML = '';
+        log('🗑️ Log cleared', 'info');
+    }
+
+    // ---- Init ----
+    document.getElementById('genEmailBtn').addEventListener('click', genEmail);
+    document.getElementById('sendTrialBtn').addEventListener('click', sendTrialAction);
+    document.getElementById('checkMailBtn').addEventListener('click', checkMail);
+    document.getElementById('autoPilotBtn').addEventListener('click', autoPilot);
+    document.getElementById('clickLinkBtn').addEventListener('click', clickMagicLink);
+    document.getElementById('manualSendBtn').addEventListener('click', manualSend);
+    document.getElementById('clearLogBtn').addEventListener('click', clearLog);
+    document.getElementById('manualEmailInput').addEventListener('keyup', (e) => { if (e.key === 'Enter') manualSend(); });
+
+    // Start
+    connectWS();
+    log(`🔌 WebSocket client for ${DOMAIN} initialized`, 'info');
+    log('💡 Tip: Generate email → Send Trial → Check Inbox → Click Link', 'info');
+</script>
+</body>
+</html>
